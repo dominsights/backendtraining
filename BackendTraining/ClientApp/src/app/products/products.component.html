@@ -1,3 +1,35 @@
-<p>
-  products works!
-</p>
+<h4>Products</h4>
+<hr />
+
+<p *ngIf="!products"><em>Loading...</em></p>
+
+<section *ngIf="products">
+  <div class="row">
+    <div class="col-lg-12 my-2">
+      <a class="btn btn-primary float-right" role="button" [routerLink]='["/new-product"]'><i class="fa fa-plus"></i> Product</a>
+    </div>
+  </div>
+
+  <table class='table table-striped'>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products">
+        <td>{{ product.description }}</td>
+        <td>{{ product.quantity }}</td>
+        <td>{{ product.price }}</td>
+        <td>
+          <a href="#" class="fa fa-edit"></a>
+          <a href="#" class="fa fa-info-circle ml-2"></a>
+          <a href="#" class="fa fa-trash ml-2"></a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
