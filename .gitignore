@@ -261,3 +261,7 @@ __pycache__/
 *.pyc
 /BackendTraining/private.key
 /BackendTraining/public.key
+/BackendTraining/privatekey.xml
+/BackendTraining/publickey.xml
+/BackendTraining/private-key.xml
+/BackendTraining/public-key.xml

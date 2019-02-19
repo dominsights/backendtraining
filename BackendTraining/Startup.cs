@@ -1,4 +1,5 @@
 using BackendTraining.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -6,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.IO;
+using System.Text;
 
 namespace BackendTraining
 {
@@ -21,8 +26,26 @@ namespace BackendTraining
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            IdentityModelEventSource.ShowPII = true;
             services.AddTransient<AuthService>();
+            services.AddSingleton<JwtHandler>();
+            services.Configure<JwtSettings>(Configuration.GetSection("jwt"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            var sp = services.BuildServiceProvider();
+
+            var jwtHandler = sp.GetService<JwtHandler>();
+
+            services.AddAuthentication(configuration =>
+            {
+                configuration.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                configuration.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(configuration =>
+            {
+                configuration.SaveToken = true;
+                configuration.TokenValidationParameters = jwtHandler.Parameters;
+            });
 
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -48,6 +71,8 @@ namespace BackendTraining
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {

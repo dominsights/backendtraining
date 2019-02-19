@@ -18,9 +18,9 @@ namespace BackendTraining.Controllers
 
         [AllowAnonymous]
         [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromBody]User credentials)
+        public IActionResult Login([FromBody]User credentials)
         {
-            var userPayload = await _authService.LoginAsync(credentials.UserName, credentials.Password);
+            var userPayload = _authService.LoginAsync(credentials.UserName, credentials.Password);
 
             if(userPayload == null)
             {
