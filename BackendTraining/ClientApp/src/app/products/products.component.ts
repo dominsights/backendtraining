@@ -18,7 +18,6 @@ export class ProductsComponent implements OnInit {
       { description: 'Snack', quantity: 7, price: 5 },
     ]
   }
-
 }
 
 interface Product {
