@@ -15,13 +15,13 @@ namespace BackendTraining.Services
         private JwtHandler _jwtHandler;
         private List<User> _users;
 
-        public UserPayload LoginAsync(string userName, string password)
+        public UserJwt LoginAsync(string userName, string password)
         {
             try
             {
                 var userIdentity = _users.First(u => u.UserName.Equals(userName) && u.Password.Equals(password));
                 var jwt = _jwtHandler.Create(userIdentity.Id.ToString());
-                var payload = new UserPayload() { Id = userIdentity.Id, Token = jwt.Token, ExpiresIn = jwt.Expires };
+                var payload = new UserJwt() { Id = userIdentity.Id, Token = jwt.Token, ExpiresIn = jwt.Expires };
 
                 return payload;
             }

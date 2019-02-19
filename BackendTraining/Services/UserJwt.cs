@@ -1,8 +1,8 @@
 ﻿namespace BackendTraining.Services
 {
-    public class UserPayload
+    public class UserJwt
     {
-        public UserPayload()
+        public UserJwt()
         {
         }
 
