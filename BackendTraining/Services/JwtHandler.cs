@@ -32,7 +32,7 @@ namespace BackendTraining.Services
             using (RSA publicRsa = RSA.Create())
             {
                 var publicKeyXml = File.ReadAllText(_settings.PublicKeyXML);
-                publicRsa.JwtFromXmlString(publicKeyXml);
+                publicRsa.RsaFromXmlString(publicKeyXml);
                 _issuerSigningKey = new RsaSecurityKey(publicRsa);
             }
             if (string.IsNullOrWhiteSpace(_settings.PrivateKeyXML))
@@ -42,7 +42,7 @@ namespace BackendTraining.Services
             using (RSA privateRsa = RSA.Create())
             {
                 var privateKeyXml = File.ReadAllText(_settings.PrivateKeyXML);
-                privateRsa.JwtFromXmlString(privateKeyXml);
+                privateRsa.RsaFromXmlString(privateKeyXml);
                 var privateKey = new RsaSecurityKey(privateRsa);
                 _signingCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256);
             }
@@ -90,7 +90,7 @@ namespace BackendTraining.Services
 
     static class JwtExtensions
     {
-        public static void JwtFromXmlString(this RSA rsa, string xmlString)
+        public static void RsaFromXmlString(this RSA rsa, string xmlString)
         {
             var parameters = new RSAParameters();
             XmlDocument xmlDoc = new XmlDocument();
