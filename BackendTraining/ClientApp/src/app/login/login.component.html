@@ -1,0 +1,16 @@
+<form [formGroup]="form" class="form-signin" (ngSubmit)="onSubmit()">
+  <h1 class="h3 mb-3 font-weight-normal">Please login to continue</h1>
+  <fieldset class="form-group">
+    <input placeholder="User" class="form-control" formControlName="userName" required>
+    <span class="text-danger" *ngIf="isFieldInvalid('userName')">
+      Please inform your user name
+    </span>
+  </fieldset>
+  <fieldset class="form-group">
+    <input type="password" class="form-control" placeholder="Password" formControlName="password" required>
+    <span class="text-danger" *ngIf="isFieldInvalid('password')">
+      Please inform your password
+    </span>
+  </fieldset>
+  <button class="btn btn-primary">Login</button>
+</form>
