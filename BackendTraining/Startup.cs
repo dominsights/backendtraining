@@ -29,6 +29,7 @@ namespace BackendTraining
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //change to redis or sql server cache in production
             services.AddDistributedMemoryCache();
 
             IdentityModelEventSource.ShowPII = true;
