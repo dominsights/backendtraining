@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Threading.Tasks;
+using BackendTraining.Models;
+using BackendTraining.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace BackendTraining.Controllers
 {
@@ -13,24 +19,51 @@ namespace BackendTraining.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private IDistributedCache _cache;
+
         [HttpGet("[action]")]
-        public IEnumerable<Product> Products()
+        public async Task<IEnumerable<Product>> Products()
         {
-            var products = new Product[]
+            var cachedProducts = await _cache.GetAsync("products");
+
+            if (cachedProducts != null)
             {
-                new Product { Description = "Bottle of water", Quantity = 10, Price = 1.5 },
-                new Product { Description = "French fries", Quantity = 15, Price = 2.5 },
-                new Product { Description = "Snack", Quantity = 7, Price = 5 }
-            };
+                using (var stream = new MemoryStream())
+                {
+                    await stream.WriteAsync(cachedProducts, 0, cachedProducts.Length);
+                    stream.Position = 0;
+
+                    var formatter = new BinaryFormatter();
+                    return (Product[])formatter.Deserialize(stream);
+                }
+            }
+
+            var productRepository = new ProductRepository();
+            var products = productRepository.GetAll();
+
+            using (var stream = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(stream, products);
+
+                var options = new DistributedCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+
+                await _cache.SetAsync("products", stream.ToArray());
+            }
 
             return products;
         }
 
-        public class Product
+        public ProductController(IDistributedCache cache)
         {
-            public string Description { get; set; }
-            public int Quantity { get; set; }
-            public double Price { get; set; }
+            _cache = cache;
+        }
+
+        public class ProductCachedTest
+        {
+            public string CachedTimeUTC { get; set; }
+            public Product[] Products { get; set; }
         }
     }
 }
