@@ -9,10 +9,8 @@ import { User } from './User';
   providedIn: 'root'
 })
 export class AuthService {
-  baseUrl: string;
 
-  constructor(private http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
-    this.baseUrl = baseUrl;
+  constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) {
   }
 
   login(user: User) {

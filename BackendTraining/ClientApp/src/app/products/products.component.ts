@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-products',
@@ -8,15 +10,13 @@ import { Component, OnInit } from '@angular/core';
 export class ProductsComponent implements OnInit {
   public products: Product[];
 
-  constructor() { }
+  constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) {
+  }
 
   ngOnInit() {
-    //get from backend after implementing security
-    this.products = [
-      { description: 'Bottle of water', quantity: 10, price: 1.5 },
-      { description: 'French fries', quantity: 15, price: 2.5 },
-      { description: 'Snack', quantity: 7, price: 5 },
-    ]
+    this.http.get<Product[]>(this.baseUrl + '/api/Product/Products').subscribe(result => {
+      this.products = result;
+    }, error => console.error(error));
   }
 }
 
