@@ -16,7 +16,7 @@ export class AuthService {
   login(user: User) {
     if (user.userName !== '' && user.password !== '') {
       //Verify if response is valid ???
-      return this.http.post<User>(this.baseUrl + 'api/Auth/Login', user)
+      return this.http.post<User>(this.baseUrl + '/api/Auth/Login', user)
         .pipe(
           tap(this.setSession),
           shareReplay()

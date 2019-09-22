@@ -14,7 +14,7 @@ export class ProductsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.http.get<Product[]>(this.baseUrl + 'api/Product/Products').subscribe(result => {
+    this.http.get<Product[]>(this.baseUrl + '/api/Product/Products').subscribe(result => {
       this.products = result;
     }, error => console.error(error));
   }
