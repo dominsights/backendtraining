@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -29,23 +31,23 @@ namespace BackendTraining.Services
 
         private void InitializeRsa()
         {
-            using (RSA publicRsa = RSA.Create())
-            {
-                var publicKeyXml = File.ReadAllText(_settings.PublicKeyXML);
-                publicRsa.RsaFromXmlString(publicKeyXml);
-                _issuerSigningKey = new RsaSecurityKey(publicRsa);
-            }
+            RSA publicRsa = RSA.Create();
+            
+            var publicKeyXml = File.ReadAllText(_settings.PublicKeyXML);
+            publicRsa.RsaFromXmlString(publicKeyXml);
+            _issuerSigningKey = new RsaSecurityKey(publicRsa);
+            
             if (string.IsNullOrWhiteSpace(_settings.PrivateKeyXML))
             {
                 return;
             }
-            using (RSA privateRsa = RSA.Create())
-            {
-                var privateKeyXml = File.ReadAllText(_settings.PrivateKeyXML);
-                privateRsa.RsaFromXmlString(privateKeyXml);
-                var privateKey = new RsaSecurityKey(privateRsa);
-                _signingCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256);
-            }
+            
+            RSA privateRsa = RSA.Create();
+            
+            var privateKeyXml = File.ReadAllText(_settings.PrivateKeyXML);
+            privateRsa.RsaFromXmlString(privateKeyXml);
+            var privateKey = new RsaSecurityKey(privateRsa);
+            _signingCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256);
         }
 
         private void InitializeJwtParameters()
@@ -65,20 +67,28 @@ namespace BackendTraining.Services
             var expires = nowUtc.AddMinutes(5);
             var centuryBegin = new DateTime(1970, 1, 1);
             var exp = (long)(new TimeSpan(expires.Ticks - centuryBegin.Ticks).TotalSeconds);
-            var now = (long)(new TimeSpan(nowUtc.Ticks - centuryBegin.Ticks).TotalSeconds);
+            var now = DateTime.Now;
             var issuer = _settings.Issuer ?? string.Empty;
-            var payload = new JwtPayload
+
+
+            ClaimsIdentity identity = new ClaimsIdentity(
+                new GenericIdentity(userId, "Login"),
+                new[] {
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+                    new Claim(JwtRegisteredClaimNames.UniqueName, userId)
+                }
+            );
+
+            var handler = new JwtSecurityTokenHandler();
+            var securityToken = handler.CreateToken(new SecurityTokenDescriptor
             {
-                {"sub", userId},
-                {"unique_name", userId},
-                {"iss", issuer},
-                {"iat", now},
-                {"nbf", now},
-                {"exp", exp},
-                {"jti", Guid.NewGuid().ToString("N")}
-            };
-            var jwt = new JwtSecurityToken(_jwtHeader, payload);
-            var token = _jwtSecurityTokenHandler.WriteToken(jwt);
+                Issuer = issuer,
+                Subject = identity,
+                SigningCredentials = _signingCredentials,
+                NotBefore = nowUtc,
+                Expires = expires
+            });
+            var token = handler.WriteToken(securityToken);
 
             return new JWT
             {
